@@ -235,6 +235,31 @@ ipfs.on('ready', async () => {
 })
 ```
 
+#### Public databases
+
+The access control mechanism also support "public" databases to which anyone can write to.
+
+This can be done by adding a `*` to the write access array:
+```javascript
+const ipfs = new IPFS()
+ipfs.on('ready', async () => {
+  const orbitdb = await OrbitDB.createInstance(ipfs)
+
+  const access = {
+    // Give write access to everyone
+    write: ['*'],
+  }
+
+  const db = await orbitdb.keyvalue('first-database', access)
+  console.log(db.address.toString())
+  // /orbitdb/QmRrauSxaAvNjpZcm2Cq6y9DcrH8wQQWGjtokF4tgCUxGP/first-database
+})
+```
+
+Note how the access controller hash is different compared to the previous example!
+
+#### Granting access after database creation
+
 To give access to another peer after the database has been created, you must set the access-controller `type` to an `AccessController` which supports dynamically adding keys such as `OrbitDBAccessController`.
 
 ```javaScript
@@ -254,20 +279,15 @@ You can create a custom access controller by implementing the `AccessController`
 
 ```javascript
 class OtherAccessController extends AccessController {
-
+    static get type () { return 'othertype'} // Return the type for this controller
+    async canAppend(entry, identityProvider) {} // return true if entry can be added, identityProvider allows you to verify entry.identity
+    async grant (access, identity) {} // Logic for granting access to identity
 }
+
 ACFactory.addAccessController({ AccessController: OtherAccessController })
-```
-
-#### Public databases
-
-The access control mechanism also support "public" databases to which anyone can write to.
-
-This can be done by adding a `*` to the write access array:
-```javascript
-const ipfs = new IPFS()
-ipfs.on('ready', async () => {
-  const orbitdb = await OrbitDB.createInstance(ipfs)
+const orbitdb = await OrbitDB.createInstance(ipfs, {
+  ACFactory: ACFactory
+})
 
   const options = {
     // Give write access to everyone
