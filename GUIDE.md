@@ -245,12 +245,14 @@ const ipfs = new IPFS()
 ipfs.on('ready', async () => {
   const orbitdb = await OrbitDB.createInstance(ipfs)
 
-  const access = {
+  const options = {
     // Give write access to everyone
-    write: ['*'],
+    accessController: {
+      write: ['*']
+    }
   }
 
-  const db = await orbitdb.keyvalue('first-database', access)
+  const db = await orbitdb.keyvalue('first-database', options)
   console.log(db.address.toString())
   // /orbitdb/QmRrauSxaAvNjpZcm2Cq6y9DcrH8wQQWGjtokF4tgCUxGP/first-database
 })
@@ -275,7 +277,7 @@ await db.access.grant('write', id2.publicKey) // grant access to id2
 
 #### Custom Access Controller
 
-You can create a custom access controller by implementing the `AccessController` [interface](https://github.com/orbitdb/orbit-db-access-controllers/blob/master/src/access-controller-interface.js) and adding it to the ACFactory object before passing it to OrbitDB.
+You can create a custom access controller by implementing the `AccessController` [interface](https://github.com/orbitdb/orbit-db-access-controllers/blob/master/src/access-controller-interface.js) and adding it to the AccessControllers object before passing it to OrbitDB.
 
 ```javascript
 class OtherAccessController extends AccessController {
@@ -283,10 +285,10 @@ class OtherAccessController extends AccessController {
     async canAppend(entry, identityProvider) {} // return true if entry can be added, identityProvider allows you to verify entry.identity
     async grant (access, identity) {} // Logic for granting access to identity
 }
-
-ACFactory.addAccessController({ AccessController: OtherAccessController })
+let AccessControllers = require('orbit-db-access-controllers')
+AccessControllers.addAccessController({ AccessController: OtherAccessController })
 const orbitdb = await OrbitDB.createInstance(ipfs, {
-  ACFactory: ACFactory
+  AccessControllers: AccessControllers
 })
 
   const options = {
