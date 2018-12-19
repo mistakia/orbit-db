@@ -262,17 +262,17 @@ Note how the access controller hash is different compared to the previous exampl
 
 #### Granting access after database creation
 
-To give access to another peer after the database has been created, you must set the access-controller `type` to an `AccessController` which supports dynamically adding keys such as `OrbitDBAccessController`.
+To give access to another peer after the database has been created, you must set the access-controller `type` to an `AccessController` which supports dynamically adding write-access such as `OrbitDBAccessController`.
 
 ```javaScript
 db = await orbitdb1.feed('AABB', {
   accessController: {
     type: 'orbitdb', //OrbitDBAccessController
-    write: [id1.publicKey]
+    write: [identity1.publicKey]
   }
 })
 
-await db.access.grant('write', id2.publicKey) // grant access to id2
+await db.access.grant('write', identity2.publicKey) // grant access to identity2
 ```
 
 #### Custom Access Controller
@@ -281,12 +281,23 @@ You can create a custom access controller by implementing the `AccessController`
 
 ```javascript
 class OtherAccessController extends AccessController {
-    static get type () { return 'othertype'} // Return the type for this controller
-    async canAppend(entry, identityProvider) {} // return true if entry can be added, identityProvider allows you to verify entry.identity
+
+    static get type () { return 'othertype' } // Return the type for this controller
+
+    async canAppend(entry, identityProvider) {
+      // logic to determine if entry can be added, for example:
+      if (entry.payload === "hello world" && entry.identity.id === identity.id && identityProvider.verifyIdentity(entry.identity))
+        return true
+
+      return false
+      }
+
     async grant (access, identity) {} // Logic for granting access to identity
 }
+
 let AccessControllers = require('orbit-db-access-controllers')
 AccessControllers.addAccessController({ AccessController: OtherAccessController })
+
 const orbitdb = await OrbitDB.createInstance(ipfs, {
   AccessControllers: AccessControllers
 })
