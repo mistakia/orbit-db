@@ -26,12 +26,12 @@
     "orbit-db-eventstore": "~1.7.0",
     "orbit-db-feedstore": "~1.7.0",
     "orbit-db-identity-provider": "~0.3.0",
-    "orbit-db-io": "~0.2.0",
+    "orbit-db-io": "github:mistakia/orbit-db-io#feat/localResolve",
     "orbit-db-keystore": "~0.3.0",
     "orbit-db-kvstore": "~1.7.0",
     "orbit-db-pubsub": "~0.5.5",
     "orbit-db-storage-adapter": "~0.5.3",
-    "orbit-db-store": "~3.0.0"
+    "orbit-db-store": "github:mistakia/orbit-db-store#proto/read-from-disk"
   },
   "devDependencies": {
     "adm-zip": "^0.4.13",
