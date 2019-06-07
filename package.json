@@ -30,7 +30,7 @@
     "orbit-db-io": "~0.1.0",
     "orbit-db-kvstore": "~1.5.0",
     "orbit-db-pubsub": "~0.5.5",
-    "orbit-db-storage-adapter": "^0.4.1",
+    "orbit-db-storage-adapter": "^0.4.2",
     "orbit-db-store": "orbitdb/orbit-db-store#fix/store-performance"
   },
   "devDependencies": {
