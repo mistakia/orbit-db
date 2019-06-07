@@ -16,8 +16,8 @@ const OrbitDBAddress = require('./orbit-db-address')
 const createDBManifest = require('./db-manifest')
 const exchangeHeads = require('./exchange-heads')
 const { isDefined, io } = require('./utils')
-const isNode = require('is-node')
 const Storage = require('orbit-db-storage-adapter')
+const leveldown = require('leveldown')
 
 const Logger = require('logplease')
 const logger = Logger.create("orbit-db")
@@ -66,11 +66,11 @@ class OrbitDB {
       options.directory = './orbitdb'
 
     if (!options.storage) {
-      const leveldown = isNode ? require('leveldown') : require('level-js')
-      options.storage = Storage(leveldown)
-      options.storage.preCreate = isNode ? async (directory, options) => {
+      let storageOptions = {};
+      if(fs && fs.mkdirSync) storageOptions.preCreate = async (directory) => {
         fs.mkdirSync(directory, { recursive: true })
-      } : null;
+      }
+      options.storage = Storage(leveldown, storageOptions)
     }
 
     if(!options.keystore) {
