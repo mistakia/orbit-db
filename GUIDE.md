@@ -302,6 +302,63 @@ const orbitdb = await OrbitDB.createInstance(ipfs, {
   AccessControllers: AccessControllers
 })
 
+  const options = {
+    // Give write access to everyone
+    accessController: {
+      write: ['*']
+    }
+  }
+
+  const db = await orbitdb.keyvalue('first-database', options)
+  console.log(db.address.toString())
+  // /orbitdb/QmRrauSxaAvNjpZcm2Cq6y9DcrH8wQQWGjtokF4tgCUxGP/first-database
+})
+```
+
+Note how the access controller hash is different compared to the previous example!
+
+#### Granting access after database creation
+
+To give access to another peer after the database has been created, you must set the access-controller `type` to an `AccessController` which supports dynamically adding write-access such as `OrbitDBAccessController`.
+
+```javaScript
+db = await orbitdb1.feed('AABB', {
+  accessController: {
+    type: 'orbitdb', //OrbitDBAccessController
+    write: [identity1.publicKey]
+  }
+})
+
+await db.access.grant('write', identity2.publicKey) // grant access to identity2
+```
+
+#### Custom Access Controller
+
+You can create a custom access controller by implementing the `AccessController` [interface](https://github.com/orbitdb/orbit-db-access-controllers/blob/master/src/access-controller-interface.js) and adding it to the AccessControllers object before passing it to OrbitDB.
+
+```javascript
+class OtherAccessController extends AccessController {
+
+    static get type () { return 'othertype' } // Return the type for this controller
+
+    async canAppend(entry, identityProvider) {
+      // logic to determine if entry can be added, for example:
+      if (entry.payload === "hello world" && entry.identity.id === identity.id && identityProvider.verifyIdentity(entry.identity))
+        return true
+
+      return false
+      }
+
+    async grant (access, identity) {} // Logic for granting access to identity
+}
+
+let AccessControllers = require('orbit-db-access-controllers')
+AccessControllers.addAccessController({ AccessController: OtherAccessController })
+
+const orbitdb = await OrbitDB.createInstance(ipfs, {
+  AccessControllers: AccessControllers
+})
+
 const db = await orbitdb.keyvalue('first-database', {
   accessController: {
     type: 'othertype',
